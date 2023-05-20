@@ -119,7 +119,7 @@ class HKEnv(gym.Env):
         :return: return the monitor location for screenshot
         """
         window = pyautogui.getWindowsWithTitle('Hollow Knight')
-        assert len(window) == 1, f'found {len(window)} windows called Hollow Knight {window}'
+        # assert len(window) == 1, f'found {len(window)} windows called Hollow Knight {window}'
         window = window[0]
         try:
             window.activate()
@@ -245,6 +245,7 @@ class HKEnv(gym.Env):
         """
         with mss() as sct:
             frame = np.asarray(sct.grab(self.monitor), dtype=np.uint8)
+        cv2.imwrite("debug/frame/origin_frame.png", frame)
         enemy_hp_bar = frame[-1, 187:826, :]
         if (np.all(enemy_hp_bar[..., 0] == enemy_hp_bar[..., 1]) and
                 np.all(enemy_hp_bar[..., 1] == enemy_hp_bar[..., 2])):
@@ -260,9 +261,11 @@ class HKEnv(gym.Env):
         obs = cv2.cvtColor(frame[:672, ...],
                            (cv2.COLOR_BGRA2RGB if rgb
                             else cv2.COLOR_BGRA2GRAY))
+        cv2.imwrite("debug/frame/obs.png", obs)
         obs = cv2.resize(obs,
                          dsize=self.observation_space.shape[1:],
                          interpolation=cv2.INTER_AREA)
+        cv2.imwrite("debug/frame/obs_resize.png", obs)
         # make channel first
         obs = np.rollaxis(obs, -1) if rgb else obs[np.newaxis, ...]
         return obs, knight_hp, enemy_hp
